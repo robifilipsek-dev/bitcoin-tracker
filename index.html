@@ -242,14 +242,15 @@
                 <p id="chartSubtitle" class="text-xs text-zinc-400 mt-0.5">Zadnjih 30 dni (cena v € / BTC)</p>
             </div>
             
-            <!-- Časovni gumbi za graf -->
+            <!-- Posodobljeni standardni časovni gumbi -->
             <div class="flex bg-zinc-950 rounded-lg p-1 border border-zinc-800 overflow-x-auto hide-scroll">
+                <button onclick="updateTimeframe('1', this)" class="chart-btn shrink-0 px-3 py-1.5 text-xs rounded-md text-zinc-400 hover:text-white transition font-semibold">24h</button>
                 <button onclick="updateTimeframe('7', this)" class="chart-btn shrink-0 px-3 py-1.5 text-xs rounded-md text-zinc-400 hover:text-white transition font-semibold">7 dni</button>
+                <button onclick="updateTimeframe('14', this)" class="chart-btn shrink-0 px-3 py-1.5 text-xs rounded-md text-zinc-400 hover:text-white transition font-semibold">14 dni</button>
                 <button onclick="updateTimeframe('30', this)" class="chart-btn shrink-0 px-3 py-1.5 text-xs rounded-md bg-zinc-800 text-white shadow transition font-semibold">30 dni</button>
+                <button onclick="updateTimeframe('90', this)" class="chart-btn shrink-0 px-3 py-1.5 text-xs rounded-md text-zinc-400 hover:text-white transition font-semibold">90 dni</button>
                 <button onclick="updateTimeframe('180', this)" class="chart-btn shrink-0 px-3 py-1.5 text-xs rounded-md text-zinc-400 hover:text-white transition font-semibold">6 mes</button>
                 <button onclick="updateTimeframe('365', this)" class="chart-btn shrink-0 px-3 py-1.5 text-xs rounded-md text-zinc-400 hover:text-white transition font-semibold">1 leto</button>
-                <button onclick="updateTimeframe('1825', this)" class="chart-btn shrink-0 px-3 py-1.5 text-xs rounded-md text-zinc-400 hover:text-white transition font-semibold">5 let</button>
-                <button onclick="updateTimeframe('max', this)" class="chart-btn shrink-0 px-3 py-1.5 text-xs rounded-md text-zinc-400 hover:text-white transition font-semibold">Max</button>
             </div>
         </div>
         
@@ -410,7 +411,7 @@
         try {
             const data = JSON.parse(localStorage.getItem(CACHE_KEY));
             if (!data) return null;
-            if (Date.now() - data.timestamp > 24 * 60 * 60 * 1000) return null;
+            if (Date.now() - data.timestamp > 12 * 60 * 60 * 1000) return null;
             return data;
         } catch {
             return null;
@@ -481,97 +482,44 @@
         await loadChart(currentDays);
     }
 
-    async function fetchBinanceKlines(interval, limit = 1000) {
-        const url = `https://api.binance.com/api/v3/klines?symbol=BTCEUR&interval=${interval}&limit=${limit}`;
-        const response = await fetch(url, { cache: "no-store" });
-        if (!response.ok) throw new Error("Binance Klines API napaka");
-        const data = await response.json();
-        return data.map(item => ({
-            time: new Date(item[0]),
-            price: parseFloat(item[4])
-        }));
-    }
-
     async function fetchHistory(days) {
         const cacheKey = CHART_CACHE_PREFIX + days;
-        
-        // Poskus pridobivanja iz lokalnega spomina pri izgubi povezave
-        let cachedData = null;
         try {
             const cached = JSON.parse(localStorage.getItem(cacheKey));
-            if (cached) {
-                cachedData = cached.data.map(item => ({ time: new Date(item.time), price: item.price }));
-                // Če je cache mlajši od 1 ure, ga takoj vrnemo
-                if (Date.now() - cached.timestamp < 60 * 60 * 1000) {
-                    return cachedData;
-                }
+            if (cached && (Date.now() - cached.timestamp < 60 * 60 * 1000)) {
+                return cached.data.map(item => ({ time: new Date(item.time), price: item.price }));
             }
         } catch(e) {}
 
-        // Poskus primarnega vira (CoinGecko)
+        const url = `https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=eur&days=${days}`;
+        const response = await fetch(url, { cache: "no-store" });
+        
+        if (!response.ok) throw new Error("History API napaka");
+        const data = await response.json();
+        if (!data.prices || !Array.isArray(data.prices)) throw new Error("Ni zgodovinskih podatkov");
+        
+        const formattedData = data.prices.map(item => ({
+            time: new Date(item[0]),
+            price: item[1]
+        }));
+
         try {
-            const url = `https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=eur&days=${days}`;
-            const response = await fetch(url, { cache: "no-store" });
-            
-            if (response.ok) {
-                const data = await response.json();
-                if (data.prices && Array.isArray(data.prices) && data.prices.length > 0) {
-                    const formattedData = data.prices.map(item => ({
-                        time: new Date(item[0]),
-                        price: item[1]
-                    }));
+            localStorage.setItem(cacheKey, JSON.stringify({
+                timestamp: Date.now(),
+                data: formattedData
+            }));
+        } catch(e) {}
 
-                    localStorage.setItem(cacheKey, JSON.stringify({
-                        timestamp: Date.now(),
-                        data: formattedData
-                    }));
-
-                    return formattedData;
-                }
-            }
-        } catch(e) {
-            console.warn("CoinGecko API ni dosegljiv, poskušam sekundarni vir...", e);
-        }
-
-        // Poskus sekundarnega vira (Binance) glede na obdobje
-        try {
-            let bData;
-            if (days === '1825' || days === 'max') {
-                bData = await fetchBinanceKlines('1w', 1000); // tedenske sveče za daljša obdobja
-            } else if (days === '365') {
-                bData = await fetchBinanceKlines('1d', 365);
-            } else if (days === '180') {
-                bData = await fetchBinanceKlines('1d', 180);
-            } else {
-                bData = await fetchBinanceKlines('1h', parseInt(days) * 24);
-            }
-
-            if (bData && bData.length > 0) {
-                localStorage.setItem(cacheKey, JSON.stringify({
-                    timestamp: Date.now(),
-                    data: bData
-                }));
-                return bData;
-            }
-        } catch(e) {
-            console.warn("Binance Klines API prav tako neuspešen.", e);
-        }
-
-        // Če spletne zahteve ne uspejo, vrnemo predhodno shranjen cache ne glede na starost
-        if (cachedData && cachedData.length > 0) {
-            return cachedData;
-        }
-
-        throw new Error("Ni bilo mogoče pridobiti podatkov za graf.");
+        return formattedData;
     }
 
     function generateFallbackHistory(days) {
         const result = [];
         const now = Date.now();
         const base = currentBtcPrice || 60000;
-        let daysNum = days === 'max' ? 3000 : (parseInt(days) || 30);
+        let daysNum = parseInt(days) || 30;
 
-        for (let i = daysNum; i >= 0; i -= Math.max(1, Math.floor(daysNum / 100))) {
+        for (let i = daysNum; i >= 0; i--) {
             result.push({
                 time: new Date(now - i * 24 * 60 * 60 * 1000),
                 price: base
@@ -585,7 +533,7 @@
         try {
             history = await fetchHistory(days);
         } catch (error) {
-            console.warn("Uporabljam rezervno zgodovino ali zadnji znan spomin.");
+            console.warn("Uporabljam rezervno zgodovino zaradi napake pri API-ju.");
             history = generateFallbackHistory(days);
         }
         drawChart(history, days);
@@ -602,12 +550,13 @@
         btnElement.classList.add('bg-zinc-800', 'text-white', 'shadow');
 
         const labels = {
+            '1': 'Zadnjih 24 ur',
             '7': 'Zadnjih 7 dni',
+            '14': 'Zadnjih 14 dni',
             '30': 'Zadnjih 30 dni',
-            '180': 'Zadnjih 6 mesecev',
-            '365': 'Zadnje 1 leto',
-            '1825': 'Zadnjih 5 let',
-            'max': 'Vsa zgodovina'
+            '90': 'Zadnjih 90 dni (3 meseci)',
+            '180': 'Zadnjih 180 dni (6 mesecev)',
+            '365': 'Zadnje 1 leto (365 dni)'
         };
         document.getElementById('chartSubtitle').textContent = `${labels[days] || 'Zgodovina'} (cena v € / BTC)`;
 
@@ -662,7 +611,12 @@
                                 return " " + formatEUR(context.parsed.y) + " / BTC";
                             },
                             title: function(context) {
-                                return new Date(context[0].label).toLocaleDateString("sl-SI", {
+                                if (!context[0]) return "";
+                                const date = new Date(context[0].label);
+                                if (days === '1') {
+                                    return date.toLocaleTimeString("sl-SI", { hour: "2-digit", minute: "2-digit" });
+                                }
+                                return date.toLocaleDateString("sl-SI", {
                                     day: "2-digit", month: "2-digit", year: "numeric"
                                 });
                             }
@@ -678,10 +632,10 @@
                             maxTicksLimit: 8,
                             callback: function(value) {
                                 const date = new Date(this.getLabelForValue(value));
-                                if (days === '1825' || days === 'max') {
-                                    return date.toLocaleDateString("sl-SI", { year: "numeric" });
+                                if (days === '1') {
+                                    return date.toLocaleTimeString("sl-SI", { hour: "2-digit", minute: "2-digit" });
                                 }
-                                if (days === '365') {
+                                if (days === '365' || days === '180') {
                                     return date.toLocaleDateString("sl-SI", { month: "short", year: "2-digit" });
                                 }
                                 return date.toLocaleDateString("sl-SI", {
