@@ -4,24 +4,68 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bitcoin tracker — RF Digital</title>
+
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = { darkMode: 'class', theme: { extend: { colors: { brand: { orange: '#f7931a', amber: '#d97706', cyan: '#06b6d4', emerald: '#10b981' } } } } }
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            orange: '#f7931a',
+                            amber: '#d97706',
+                            cyan: '#06b6d4',
+                            emerald: '#10b981'
+                        }
+                    }
+                }
+            }
+        }
     </script>
+
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400..700&family=Plus+Jakarta+Sans:wght@300..800&display=swap" rel="stylesheet">
+
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.011em; }
-        .font-mono-num { font-family: 'JetBrains Mono', monospace; }
-        html { scroll-behavior: smooth; }
-        input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { opacity: .5; }
-        .loading { animation: pulse 1.5s infinite; }
-        @keyframes pulse { 50% { opacity: .45; } }
-        .hide-scroll::-webkit-scrollbar { display: none; }
-        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            letter-spacing: -0.011em;
+        }
+        .font-mono-num {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            opacity: .5;
+        }
+        .loading {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            50% { opacity: .45; }
+        }
+        .hide-scroll::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scroll {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
 </head>
+
 <body class="bg-zinc-950 text-zinc-100 min-h-screen p-4 md:p-8 antialiased">
+
 <div class="max-w-7xl mx-auto space-y-6">
 
     <!-- HEADER -->
@@ -31,22 +75,33 @@
                 <span class="text-xl font-black font-mono-num">₿</span>
             </div>
             <div>
-                <h1 class="text-2xl font-extrabold tracking-tight text-white">Bitcoin <span class="text-[#f7931a]">tracker</span></h1>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-2xl font-extrabold tracking-tight text-white">
+                        Bitcoin <span class="text-[#f7931a]">tracker</span>
+                    </h1>
+                </div>
                 <p class="text-xs text-zinc-400 mt-1 font-normal">Cena BTC & osebni portfolio</p>
             </div>
         </div>
+
         <div class="flex items-center gap-3">
-            <div id="connectionStatus" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-zinc-400 font-mono-num">
-                <span class="w-2 h-2 rounded-full bg-amber-500"></span> Pridobivam podatke...
+            <div id="connectionStatus"
+                 class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-zinc-400 font-mono-num">
+                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                Pridobivam podatke...
             </div>
-            <button onclick="refreshData()" class="px-4 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 transition text-xs font-semibold text-zinc-300">
+            <button onclick="refreshData()"
+                    class="px-4 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 transition text-xs font-semibold text-zinc-300">
                 Osveži
             </button>
         </div>
     </header>
 
-    <!-- CURRENT PRICE & VALUE CARDS -->
+
+    <!-- CURRENT PRICE & VALUE CARDS (KPIs) -->
     <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- Glavni KPI: Trenutna cena -->
         <div class="bg-zinc-900 border border-orange-500/30 rounded-xl p-5 shadow-lg relative overflow-hidden lg:col-span-2">
             <div class="absolute top-0 right-0 w-1.5 h-full bg-[#f7931a]"></div>
             <div class="text-zinc-400 text-xs font-semibold uppercase tracking-wider">Trenutna cena Bitcoina</div>
@@ -55,7 +110,9 @@
                 <span class="text-zinc-400 font-semibold text-sm">€ / BTC</span>
             </div>
             <div class="mt-4 flex flex-wrap items-center justify-between gap-2 text-xs">
-                <div id="priceChange" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-zinc-950 border border-zinc-800 text-zinc-300"><span>—</span></div>
+                <div id="priceChange" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-zinc-950 border border-zinc-800 text-zinc-300">
+                    <span>—</span>
+                </div>
                 <div class="text-zinc-500 font-mono-num">24h sprememba: <strong id="priceChangePercent" class="text-zinc-300">—</strong></div>
             </div>
             <div class="mt-4 pt-3 border-t border-zinc-800/80 flex flex-wrap justify-between gap-2 text-[11px] text-zinc-500 font-mono-num">
@@ -63,60 +120,91 @@
                 <span>Posodobitev: <strong id="lastUpdate" class="text-zinc-400">—</strong></span>
             </div>
         </div>
+
+        <!-- Sekundarni KPI: Manjši deleži -->
         <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-5 shadow-lg flex flex-col justify-between">
             <div>
                 <div class="text-zinc-400 text-xs font-semibold uppercase tracking-wider">Deleži Bitcoina</div>
                 <div class="mt-3 space-y-2 text-xs font-mono-num">
-                    <div class="flex justify-between items-center text-zinc-400"><span>0.001 BTC:</span> <strong id="price0001" class="text-white">— €</strong></div>
-                    <div class="flex justify-between items-center text-zinc-400"><span>0.01 BTC:</span> <strong id="price001" class="text-white">— €</strong></div>
-                    <div class="flex justify-between items-center text-zinc-400"><span>0.1 BTC:</span> <strong id="price01" class="text-white">— €</strong></div>
+                    <div class="flex justify-between items-center text-zinc-400">
+                        <span>0.001 BTC:</span>
+                        <strong id="price0001" class="text-white">— €</strong>
+                    </div>
+                    <div class="flex justify-between items-center text-zinc-400">
+                        <span>0.01 BTC:</span>
+                        <strong id="price001" class="text-white">— €</strong>
+                    </div>
+                    <div class="flex justify-between items-center text-zinc-400">
+                        <span>0.1 BTC:</span>
+                        <strong id="price01" class="text-white">— €</strong>
+                    </div>
                 </div>
             </div>
             <div class="mt-4 pt-3 border-t border-zinc-800 text-[11px] text-zinc-500">Informativna spot vrednost</div>
         </div>
+
+        <!-- Sekundarni KPI: Večji deleži / 1 BTC -->
         <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-5 shadow-lg flex flex-col justify-between">
             <div>
                 <div class="text-zinc-400 text-xs font-semibold uppercase tracking-wider">Celotni & večji zneski</div>
                 <div class="mt-3 space-y-2 text-xs font-mono-num">
-                    <div class="flex justify-between items-center text-zinc-400"><span>0.5 BTC:</span> <strong id="price05" class="text-white">— €</strong></div>
-                    <div class="flex justify-between items-center text-zinc-400"><span>1.0 BTC:</span> <strong id="price1btc" class="text-[#f7931a] text-sm font-bold">— €</strong></div>
+                    <div class="flex justify-between items-center text-zinc-400">
+                        <span>0.5 BTC:</span>
+                        <strong id="price05" class="text-white">— €</strong>
+                    </div>
+                    <div class="flex justify-between items-center text-zinc-400">
+                        <span>1.0 BTC:</span>
+                        <strong id="price1btc" class="text-[#f7931a] text-sm font-bold">— €</strong>
+                    </div>
                 </div>
             </div>
             <div class="mt-4 pt-3 border-t border-zinc-800 text-[11px] text-zinc-500 font-mono-num">Skupna zaloga: 21M BTC</div>
         </div>
+
     </section>
+
 
     <!-- PORTFOLIO & INPUTS -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Vnosni parametri -->
         <div class="lg:col-span-5 space-y-5">
             <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-5 shadow-lg space-y-4">
                 <h2 class="text-xs font-bold uppercase tracking-wider text-[#f7931a] flex items-center justify-between">
-                    <span>1. Moj Bitcoin portfolio</span> <span class="text-zinc-500 font-normal">Lokalno shranjeno</span>
+                    <span>1. Moj Bitcoin portfolio</span>
+                    <span class="text-zinc-500 font-normal">Lokalno shranjeno</span>
                 </h2>
+                
                 <div class="space-y-3">
                     <div>
                         <label class="block text-xs font-medium text-zinc-300 mb-1">Količina BTC</label>
                         <div class="relative">
-                            <input id="btcAmount" type="number" min="0" step="0.00001" placeholder="npr. 0.25" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 pr-12 text-xs font-mono-num text-white focus:outline-none focus:border-orange-500">
+                            <input id="btcAmount" type="number" min="0" step="0.00001" placeholder="npr. 0.25" 
+                                   class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 pr-12 text-xs font-mono-num text-white focus:outline-none focus:border-orange-500">
                             <span class="absolute right-3 top-2 text-zinc-500 text-xs font-mono-num">BTC</span>
                         </div>
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-zinc-300 mb-1">Povprečna nabavna cena (€ / BTC)</label>
                         <div class="relative">
-                            <input id="purchasePrice" type="number" min="0" step="0.01" placeholder="npr. 55000" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 pr-8 text-xs font-mono-num text-white focus:outline-none focus:border-orange-500">
+                            <input id="purchasePrice" type="number" min="0" step="0.01" placeholder="npr. 55000" 
+                                   class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 pr-8 text-xs font-mono-num text-white focus:outline-none focus:border-orange-500">
                             <span class="absolute right-3 top-2 text-zinc-500 text-xs font-mono-num">€</span>
                         </div>
                     </div>
                 </div>
+
                 <button onclick="clearPortfolio()" class="w-full py-2 rounded-lg border border-zinc-800 hover:border-red-900/50 hover:bg-red-950/20 text-zinc-500 hover:text-red-400 transition text-xs font-mono-num">
                     Počisti podatke portfolia
                 </button>
             </div>
         </div>
+
+        <!-- Izračun portfolia -->
         <div class="lg:col-span-7 space-y-5">
             <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-5 shadow-lg space-y-4">
                 <h2 class="text-xs font-bold uppercase tracking-wider text-white">Pregled portfolia</h2>
+                
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="bg-zinc-950 p-4 rounded-lg border border-zinc-800 space-y-1">
                         <div class="text-zinc-400 text-xs">Trenutna vrednost</div>
@@ -129,6 +217,7 @@
                         <div class="text-[11px] text-zinc-500 font-mono-num">Nabavna: <span id="portfolioAvg">0,00 €/BTC</span></div>
                     </div>
                 </div>
+
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="bg-zinc-950 p-4 rounded-lg border border-zinc-800 space-y-1">
                         <div class="text-zinc-400 text-xs">Čisti dobiček / izguba</div>
@@ -141,7 +230,9 @@
                 </div>
             </div>
         </div>
+
     </div>
+
 
     <!-- CHART SECTION -->
     <section class="bg-zinc-900 border border-zinc-800 rounded-xl p-5 md:p-6 shadow-lg space-y-4">
@@ -150,6 +241,8 @@
                 <h2 class="text-sm font-bold uppercase tracking-wider text-white">Gibanje cene Bitcoina</h2>
                 <p id="chartSubtitle" class="text-xs text-zinc-400 mt-0.5">Zadnjih 30 dni (cena v € / BTC)</p>
             </div>
+            
+            <!-- Posodobljeni standardni časovni gumbi -->
             <div class="flex bg-zinc-950 rounded-lg p-1 border border-zinc-800 overflow-x-auto hide-scroll">
                 <button onclick="updateTimeframe('1', this)" class="chart-btn shrink-0 px-3 py-1.5 text-xs rounded-md text-zinc-400 hover:text-white transition font-semibold">24h</button>
                 <button onclick="updateTimeframe('7', this)" class="chart-btn shrink-0 px-3 py-1.5 text-xs rounded-md text-zinc-400 hover:text-white transition font-semibold">7 dni</button>
@@ -160,66 +253,96 @@
                 <button onclick="updateTimeframe('365', this)" class="chart-btn shrink-0 px-3 py-1.5 text-xs rounded-md text-zinc-400 hover:text-white transition font-semibold">1 leto</button>
             </div>
         </div>
+        
         <div class="relative h-[340px]">
             <canvas id="btcChart"></canvas>
         </div>
     </section>
 
+
     <!-- INFO FOOTER CARDS -->
     <section class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
         <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-4 space-y-2">
-            <div class="text-[#f7931a] font-bold">Večnivojski API dostop</div>
-            <p class="text-zinc-400 leading-relaxed">Sistem samodejno preklaplja med CoinGecko in Binance API za maksimalno stabilnost brez rate limitov.</p>
+            <div class="text-[#f7931a] font-bold">Spot tečaj</div>
+            <p class="text-zinc-400 leading-relaxed">
+                Prikazana cena predstavlja trenutno tržno vrednost Bitcoina na menjalnicah v EUR.
+            </p>
         </div>
         <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-4 space-y-2">
-            <div class="text-cyan-400 font-bold">Lokalno shranjevanje (Cache)</div>
-            <p class="text-zinc-400 leading-relaxed">Podatki portfolia in zaledni grafi se hranijo izključno v vašem brskalniku (LocalStorage).</p>
+            <div class="text-cyan-400 font-bold">Zasebnost podatkov</div>
+            <p class="text-zinc-400 leading-relaxed">
+                Vnosi o vašem portfoliu se shranjujejo izključno lokalno v vašem brskalniku (LocalStorage).
+            </p>
         </div>
         <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-4 space-y-2">
             <div class="text-emerald-400 font-bold">Samodejno osveževanje</div>
-            <p class="text-zinc-400 leading-relaxed">Cena in grafika se zaradi varčevanja z viri samodejno osvežujeta v ozadju vsakih 15 minut.</p>
+            <p class="text-zinc-400 leading-relaxed">
+                Cena in vrednost portfolia se samodejno osvežujeta v ozadju vsakih 5 minut.
+            </p>
         </div>
     </section>
-    <footer class="text-center text-[11px] text-zinc-600 font-mono-num pb-4">RF Digital · Podatki so informativne narave</footer>
+
+    <footer class="text-center text-[11px] text-zinc-600 font-mono-num pb-4">
+        RF Digital · Podatki so informativne narave
+    </footer>
+
 </div>
+
 
 <script>
     let currentBtcPrice = null;
     let chart = null;
     let currentDays = '30';
     const STORAGE_KEY = "btcTrackerPortfolio";
+    const CACHE_KEY = "btcTrackerCache";
     const CHART_CACHE_PREFIX = "btcChartCache_";
 
     function formatEUR(value, decimals = 2) {
         if (!Number.isFinite(value)) return "—";
-        return new Intl.NumberFormat("sl-SI", { style: "currency", currency: "EUR", minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(value);
-    }
-    function formatNumber(value, decimals = 2) {
-        if (!Number.isFinite(value)) return "—";
-        return new Intl.NumberFormat("sl-SI", { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(value);
+        return new Intl.NumberFormat("sl-SI", {
+            style: "currency",
+            currency: "EUR",
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
+        }).format(value);
     }
 
-    // --- PORTFOLIO LOGIKA ---
+    function formatNumber(value, decimals = 2) {
+        if (!Number.isFinite(value)) return "—";
+        return new Intl.NumberFormat("sl-SI", {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
+        }).format(value);
+    }
+
     function savePortfolio() {
-        const data = { amount: parseFloat(document.getElementById("btcAmount").value) || 0, purchasePrice: parseFloat(document.getElementById("purchasePrice").value) || 0 };
+        const data = {
+            amount: parseFloat(document.getElementById("btcAmount").value) || 0,
+            purchasePrice: parseFloat(document.getElementById("purchasePrice").value) || 0
+        };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
         calculatePortfolio();
     }
+
     function loadPortfolio() {
         try {
             const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
             if (!saved) return;
             document.getElementById("btcAmount").value = saved.amount || "";
             document.getElementById("purchasePrice").value = saved.purchasePrice || "";
-        } catch (error) { console.warn(error); }
+        } catch (error) {
+            console.warn("Napaka pri branju portfolia:", error);
+        }
     }
+
     function clearPortfolio() {
-        if (!confirm("Ali želiš izbrisati podatke o portfoliu?")) return;
+        if (!confirm("Ali želiš izbrisati podatke o Bitcoin portfoliu?")) return;
         localStorage.removeItem(STORAGE_KEY);
         document.getElementById("btcAmount").value = "";
         document.getElementById("purchasePrice").value = "";
         calculatePortfolio();
     }
+
     function calculatePortfolio() {
         const amount = parseFloat(document.getElementById("btcAmount").value) || 0;
         const purchasePrice = parseFloat(document.getElementById("purchasePrice").value) || 0;
@@ -233,68 +356,73 @@
         document.getElementById("portfolioInvested").textContent = formatEUR(invested);
         document.getElementById("portfolioAvg").textContent = formatEUR(purchasePrice) + "/BTC";
 
-        const profitEl = document.getElementById("portfolioProfit");
-        const roiEl = document.getElementById("portfolioROI");
-        profitEl.textContent = (profit >= 0 ? "+" : "") + formatEUR(profit);
-        roiEl.textContent = (roi >= 0 ? "+" : "") + formatNumber(roi, 2) + " %";
-        
-        profitEl.className = "text-xl font-bold font-mono-num " + (profit > 0 ? "text-emerald-400" : (profit < 0 ? "text-red-400" : "text-zinc-400"));
-        roiEl.className = "text-xl font-bold font-mono-num " + (profit > 0 ? "text-emerald-400" : (profit < 0 ? "text-red-400" : "text-zinc-400"));
+        const profitElement = document.getElementById("portfolioProfit");
+        const roiElement = document.getElementById("portfolioROI");
+
+        profitElement.textContent = (profit >= 0 ? "+" : "") + formatEUR(profit);
+        roiElement.textContent = (roi >= 0 ? "+" : "") + formatNumber(roi, 2) + " %";
+
+        if (profit > 0) {
+            profitElement.className = "text-xl font-bold font-mono-num text-emerald-400";
+            roiElement.className = "text-xl font-bold font-mono-num text-emerald-400";
+        } else if (profit < 0) {
+            profitElement.className = "text-xl font-bold font-mono-num text-red-400";
+            roiElement.className = "text-xl font-bold font-mono-num text-red-400";
+        } else {
+            profitElement.className = "text-xl font-bold font-mono-num text-zinc-400";
+            roiElement.className = "text-xl font-bold font-mono-num text-zinc-400";
+        }
     }
 
-    // --- POMOŽNE FUNKCIJE ZA CACHE ---
-    function setCache(key, data) {
-        try { localStorage.setItem(key, JSON.stringify({ timestamp: Date.now(), data })); } catch (e) {}
-    }
-    function getValidCache(key, maxAgeMs) {
-        try {
-            const item = JSON.parse(localStorage.getItem(key));
-            if (item && (Date.now() - item.timestamp < maxAgeMs)) {
-                return { ...item.data, cached: true };
-            }
-        } catch (e) {}
-        return null;
-    }
-    function getFallbackCache(key) {
-        try {
-            const item = JSON.parse(localStorage.getItem(key));
-            if (item) return { ...item.data, source: "Lokalni arhiv", cached: true };
-        } catch (e) {}
-        return { price: 0, change24h: 0, source: "Podatki niso na voljo", error: true };
+    async function fetchCoinGecko() {
+        const url = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur&include_24hr_change=true";
+        const response = await fetch(url, { cache: "no-store" });
+        if (!response.ok) throw new Error("CoinGecko API napaka");
+        const data = await response.json();
+        if (!data["bitcoin"] || !Number.isFinite(data["bitcoin"].eur)) throw new Error("Neveljavni podatki CoinGecko");
+        return {
+            price: data["bitcoin"].eur,
+            change24h: Number(data["bitcoin"].eur_24h_change) || 0,
+            source: "CoinGecko"
+        };
     }
 
-    // --- 1. STABILEN BITCOIN FETCH ---
-    async function fetchBitcoinData() {
-        const CACHE_KEY = "btc_stable_cache";
-        const cached = getValidCache(CACHE_KEY, 15 * 60 * 1000);
-        if (cached) return cached;
+    async function fetchBinanceFallback() {
+        const response = await fetch("https://api.binance.com/api/v3/ticker/24hr?symbol=BTCEUR", { cache: "no-store" });
+        if (!response.ok) throw new Error("Binance API napaka");
+        const data = await response.json();
+        const price = parseFloat(data.lastPrice);
+        const change24h = parseFloat(data.priceChangePercent);
+        if (!Number.isFinite(price)) throw new Error("Neveljavna Binance cena");
+        return {
+            price: price,
+            change24h: Number.isFinite(change24h) ? change24h : 0,
+            source: "Binance"
+        };
+    }
 
+    function saveCache(data) {
         try {
-            const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur&include_24hr_change=true");
-            if (!res.ok) throw new Error("CoinGecko rate limit");
-            const data = await res.json();
-            const result = { price: data.bitcoin.eur, change24h: data.bitcoin.eur_24h_change, source: "CoinGecko" };
-            setCache(CACHE_KEY, result);
-            return result;
-        } catch (e) { console.warn("CoinGecko ni dosegljiv, preklapljam na Binance..."); }
+            localStorage.setItem(CACHE_KEY, JSON.stringify({ ...data, timestamp: Date.now() }));
+        } catch (error) {}
+    }
 
+    function loadCache() {
         try {
-            const res = await fetch("https://api.binance.com/api/v3/ticker/24hr?symbol=BTCEUR");
-            if (!res.ok) throw new Error("Binance error");
-            const data = await res.json();
-            const result = { price: parseFloat(data.lastPrice), change24h: parseFloat(data.priceChangePercent), source: "Binance" };
-            setCache(CACHE_KEY, result);
-            return result;
-        } catch (e) { console.warn("Binance ni dosegljiv, berem lokalni cache..."); }
-
-        return getFallbackCache(CACHE_KEY);
+            const data = JSON.parse(localStorage.getItem(CACHE_KEY));
+            if (!data) return null;
+            if (Date.now() - data.timestamp > 12 * 60 * 60 * 1000) return null;
+            return data;
+        } catch {
+            return null;
+        }
     }
 
     function updatePriceUI(data) {
         currentBtcPrice = data.price;
-        const priceEl = document.getElementById("currentPrice");
-        priceEl.classList.remove("loading");
-        priceEl.textContent = formatNumber(currentBtcPrice, 2);
+        const priceElement = document.getElementById("currentPrice");
+        priceElement.classList.remove("loading");
+        priceElement.textContent = formatNumber(currentBtcPrice, 2);
 
         document.getElementById("price0001").textContent = formatEUR(currentBtcPrice * 0.001);
         document.getElementById("price001").textContent = formatEUR(currentBtcPrice * 0.01);
@@ -302,17 +430,22 @@
         document.getElementById("price05").textContent = formatEUR(currentBtcPrice * 0.5);
         document.getElementById("price1btc").textContent = formatEUR(currentBtcPrice);
 
-        const changeEl = document.getElementById("priceChange");
-        const percentEl = document.getElementById("priceChangePercent");
+        const changeElement = document.getElementById("priceChange");
+        const percentElement = document.getElementById("priceChangePercent");
 
         if (Number.isFinite(data.change24h)) {
             const positive = data.change24h >= 0;
-            changeEl.innerHTML = `<span class="${positive ? "text-emerald-400" : "text-red-400"} font-semibold">${positive ? "▲" : "▼"} ${Math.abs(data.change24h).toFixed(2)}%</span> <span class="text-zinc-400">vs prejšnji dan</span>`;
-            percentEl.textContent = (positive ? "+" : "") + data.change24h.toFixed(2) + "%";
-            percentEl.className = "font-mono-num font-semibold " + (positive ? "text-emerald-400" : "text-red-400");
+            changeElement.innerHTML = `
+                <span class="${positive ? "text-emerald-400" : "text-red-400"} font-semibold">
+                    ${positive ? "▲" : "▼"} ${Math.abs(data.change24h).toFixed(2)}%
+                </span>
+                <span class="text-zinc-400">vs prejšnji dan</span>
+            `;
+            percentElement.textContent = (positive ? "+" : "") + data.change24h.toFixed(2) + "%";
+            percentElement.className = "font-mono-num font-semibold " + (positive ? "text-emerald-400" : "text-red-400");
         } else {
-            changeEl.innerHTML = `<span class="text-zinc-500">Sprememba ni na voljo</span>`;
-            percentEl.textContent = "—";
+            changeElement.innerHTML = `<span class="text-zinc-500">Sprememba ni na voljo</span>`;
+            percentElement.textContent = "—";
         }
 
         document.getElementById("dataSource").textContent = data.source;
@@ -324,59 +457,91 @@
         const status = document.getElementById("connectionStatus");
         status.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> Osvežujem...`;
 
-        const data = await fetchBitcoinData();
-
-        if (data.error) {
-            status.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500"></span> <span class="text-red-400">Ni povezave</span>`;
-            document.getElementById("currentPrice").textContent = "—";
-        } else {
+        try {
+            const data = await fetchCoinGecko();
             updatePriceUI(data);
-            if (data.cached && data.source === "Lokalni arhiv") {
-                status.innerHTML = `<span class="w-2 h-2 rounded-full bg-orange-500"></span> <span class="text-orange-400">Lokalni arhiv</span>`;
-            } else if (data.cached) {
-                status.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span> <span class="text-emerald-400">Povezano (Cache)</span>`;
-            } else {
-                status.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span> <span class="text-emerald-400">Povezano (${data.source})</span>`;
+            saveCache(data);
+            status.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span> <span class="text-emerald-400">Povezano</span>`;
+        } catch (error) {
+            try {
+                const data = await fetchBinanceFallback();
+                updatePriceUI(data);
+                saveCache(data);
+                status.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500"></span> <span class="text-amber-400">Rezervni vir (Binance)</span>`;
+            } catch (fallbackError) {
+                const cached = loadCache();
+                if (cached) {
+                    updatePriceUI({ price: cached.price, change24h: cached.change24h, source: "Lokalni cache" });
+                    status.innerHTML = `<span class="w-2 h-2 rounded-full bg-orange-500"></span> <span class="text-orange-400">Lokalni podatki</span>`;
+                } else {
+                    status.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500"></span> <span class="text-red-400">Ni povezave</span>`;
+                    document.getElementById("currentPrice").textContent = "—";
+                }
             }
         }
         await loadChart(currentDays);
     }
 
-    // --- GRAF LOGIKA ---
     async function fetchHistory(days) {
         const cacheKey = CHART_CACHE_PREFIX + days;
-        const cached = getValidCache(cacheKey, 60 * 60 * 1000);
-        if (cached && cached.data) return cached.data.map(item => ({ time: new Date(item.time), price: item.price }));
+        try {
+            const cached = JSON.parse(localStorage.getItem(cacheKey));
+            if (cached && (Date.now() - cached.timestamp < 60 * 60 * 1000)) {
+                return cached.data.map(item => ({ time: new Date(item.time), price: item.price }));
+            }
+        } catch(e) {}
 
-        const res = await fetch(`https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=eur&days=${days}`);
-        if (!res.ok) throw new Error("History API napaka");
-        const data = await res.json();
-        const formattedData = data.prices.map(item => ({ time: new Date(item[0]), price: item[1] }));
+        const url = `https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=eur&days=${days}`;
+        const response = await fetch(url, { cache: "no-store" });
         
-        setCache(cacheKey, { data: formattedData });
+        if (!response.ok) throw new Error("History API napaka");
+        const data = await response.json();
+        if (!data.prices || !Array.isArray(data.prices)) throw new Error("Ni zgodovinskih podatkov");
+        
+        const formattedData = data.prices.map(item => ({
+            time: new Date(item[0]),
+            price: item[1]
+        }));
+
+        try {
+            localStorage.setItem(cacheKey, JSON.stringify({
+                timestamp: Date.now(),
+                data: formattedData
+            }));
+        } catch(e) {}
+
         return formattedData;
     }
 
     function generateFallbackHistory(days) {
         const result = [];
+        const now = Date.now();
         const base = currentBtcPrice || 60000;
         let daysNum = parseInt(days) || 30;
-        for (let i = daysNum; i >= 0; i--) result.push({ time: new Date(Date.now() - i * 24 * 60 * 60 * 1000), price: base });
+
+        for (let i = daysNum; i >= 0; i--) {
+            result.push({
+                time: new Date(now - i * 24 * 60 * 60 * 1000),
+                price: base
+            });
+        }
         return result;
     }
 
     async function loadChart(days = '30') {
+        let history;
         try {
-            const history = await fetchHistory(days);
-            drawChart(history, days);
+            history = await fetchHistory(days);
         } catch (error) {
-            console.warn("Napaka pri grafu, ohranjam starega (Silent failure).");
-            if (!chart) drawChart(generateFallbackHistory(days), days); // Narišemo ravno črto le, če grafa še sploh ni
+            console.warn("Uporabljam rezervno zgodovino zaradi napake pri API-ju.");
+            history = generateFallbackHistory(days);
         }
+        drawChart(history, days);
     }
 
     async function updateTimeframe(days, btnElement) {
         currentDays = days;
+        
         document.querySelectorAll('.chart-btn').forEach(btn => {
             btn.classList.remove('bg-zinc-800', 'text-white', 'shadow');
             btn.classList.add('text-zinc-400');
@@ -384,15 +549,28 @@
         btnElement.classList.remove('text-zinc-400');
         btnElement.classList.add('bg-zinc-800', 'text-white', 'shadow');
 
-        const labels = { '1': 'Zadnjih 24 ur', '7': 'Zadnjih 7 dni', '14': 'Zadnjih 14 dni', '30': 'Zadnjih 30 dni', '90': 'Zadnjih 90 dni', '180': 'Zadnjih 6 mesecev', '365': 'Zadnje leto' };
+        const labels = {
+            '1': 'Zadnjih 24 ur',
+            '7': 'Zadnjih 7 dni',
+            '14': 'Zadnjih 14 dni',
+            '30': 'Zadnjih 30 dni',
+            '90': 'Zadnjih 90 dni (3 meseci)',
+            '180': 'Zadnjih 180 dni (6 mesecev)',
+            '365': 'Zadnje 1 leto (365 dni)'
+        };
         document.getElementById('chartSubtitle').textContent = `${labels[days] || 'Zgodovina'} (cena v € / BTC)`;
+
         await loadChart(days);
     }
 
     function drawChart(history, days) {
         const canvas = document.getElementById("btcChart");
         if (chart) chart.destroy();
+
+        const labels = history.map(item => item.time);
+        const prices = history.map(item => item.price);
         const ctx = canvas.getContext("2d");
+
         const gradient = ctx.createLinearGradient(0, 0, 0, 340);
         gradient.addColorStop(0, "rgba(247, 147, 26, 0.25)");
         gradient.addColorStop(1, "rgba(247, 147, 26, 0)");
@@ -400,19 +578,80 @@
         chart = new Chart(ctx, {
             type: "line",
             data: {
-                labels: history.map(i => i.time),
-                datasets: [{ data: history.map(i => i.price), borderColor: "#f7931a", backgroundColor: gradient, borderWidth: 2, fill: true, tension: 0.2, pointRadius: 0, pointHoverRadius: 5, pointHoverBackgroundColor: "#f7931a" }]
+                labels,
+                datasets: [{
+                    data: prices,
+                    borderColor: "#f7931a",
+                    backgroundColor: gradient,
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.2,
+                    pointRadius: 0,
+                    pointHoverRadius: 5,
+                    pointHoverBackgroundColor: "#f7931a",
+                    pointHoverBorderColor: "#ffffff"
+                }]
             },
             options: {
-                responsive: true, maintainAspectRatio: false, interaction: { intersect: false, mode: "index" }, plugins: { legend: { display: false } },
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { intersect: false, mode: "index" },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: "rgba(9, 11, 15, 0.95)",
+                        borderColor: "rgba(247, 147, 26, 0.3)",
+                        borderWidth: 1,
+                        titleColor: "#a1a1aa",
+                        bodyColor: "#ffffff",
+                        padding: 10,
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                return " " + formatEUR(context.parsed.y) + " / BTC";
+                            },
+                            title: function(context) {
+                                if (!context[0]) return "";
+                                const date = new Date(context[0].label);
+                                if (days === '1') {
+                                    return date.toLocaleTimeString("sl-SI", { hour: "2-digit", minute: "2-digit" });
+                                }
+                                return date.toLocaleDateString("sl-SI", {
+                                    day: "2-digit", month: "2-digit", year: "numeric"
+                                });
+                            }
+                        }
+                    }
+                },
                 scales: {
-                    x: { grid: { color: "rgba(255, 255, 255, 0.03)" }, ticks: { color: "#71717a", font: { family: 'JetBrains Mono', size: 10 }, maxTicksLimit: 8, callback: function(value) {
-                        const date = new Date(this.getLabelForValue(value));
-                        if (days === '1') return date.toLocaleTimeString("sl-SI", { hour: "2-digit", minute: "2-digit" });
-                        if (days === '365' || days === '180') return date.toLocaleDateString("sl-SI", { month: "short", year: "2-digit" });
-                        return date.toLocaleDateString("sl-SI", { day: "2-digit", month: "2-digit" });
-                    } } },
-                    y: { grid: { color: "rgba(255, 255, 255, 0.03)" }, ticks: { color: "#71717a", font: { family: 'JetBrains Mono', size: 10 }, callback: value => (value / 1000).toFixed(0) + "k €" } }
+                    x: {
+                        grid: { color: "rgba(255, 255, 255, 0.03)" },
+                        ticks: {
+                            color: "#71717a",
+                            font: { family: 'JetBrains Mono', size: 10 },
+                            maxTicksLimit: 8,
+                            callback: function(value) {
+                                const date = new Date(this.getLabelForValue(value));
+                                if (days === '1') {
+                                    return date.toLocaleTimeString("sl-SI", { hour: "2-digit", minute: "2-digit" });
+                                }
+                                if (days === '365' || days === '180') {
+                                    return date.toLocaleDateString("sl-SI", { month: "short", year: "2-digit" });
+                                }
+                                return date.toLocaleDateString("sl-SI", {
+                                    day: "2-digit", month: "2-digit"
+                                });
+                            }
+                        }
+                    },
+                    y: {
+                        grid: { color: "rgba(255, 255, 255, 0.03)" },
+                        ticks: {
+                            color: "#71717a",
+                            font: { family: 'JetBrains Mono', size: 10 },
+                            callback: function(value) { return (value / 1000).toFixed(0) + "k €"; }
+                        }
+                    }
                 }
             }
         });
@@ -428,7 +667,7 @@
     }
 
     init();
-    setInterval(refreshData, 15 * 60 * 1000); // 15 minut
+    setInterval(refreshData, 5 * 60 * 1000);
 </script>
 </body>
 </html>
